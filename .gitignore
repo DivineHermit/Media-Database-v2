@@ -1,4 +1,5 @@
 *.pyc
 *.log
 *.1
+*.zip
 Media-Database.db

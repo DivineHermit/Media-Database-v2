@@ -23,7 +23,6 @@ logger.addHandler(log_handler)
 logger.addHandler(stream_handler)
 
 
-# TODO: Having problems with indexes I think when adding new entries/making updates.
 class MDB(QtWidgets.QMainWindow):
     f"""
     Media Database PyQt5
