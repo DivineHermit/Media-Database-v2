@@ -130,7 +130,7 @@ class MDB(QtWidgets.QMainWindow):
         try:
             logger.info("Configuring media model...")
             self.model_media.setTable("media")
-            self.model_media.setEditStrategy(self.ON_FIELD_CHANGE)
+            self.model_media.setEditStrategy(self.ON_ROW_CHANGE)
             self.model_media.sort(self.MEDIA_TITLE, self.ASCENDING)
             self.model_media.select()
             logger.info("Media model configuration done.")
@@ -235,27 +235,16 @@ class MDB(QtWidgets.QMainWindow):
     # ===== Database Methods =====
     def add_entry(self, event=None):
         """
-        Add new entry to the database.
+        Add new entry to the model and set the widget mapper to display it ready for editing.
 
         :return: True/False depending on success.
         """
         try:
-            logger.info(f"Current Count: {self.count_all_entries('media')}")
-            query = QtSql.QSqlQuery(
-                "INSERT INTO media VALUES(NULL, :title, :description, :age_rating, "
-                ":genre, :season, :disc_count, :media_type, :play_time, :notes)",
-                self.db)
-            query.bindValue(0, self.ui.le_title.text())                 # Title
-            query.bindValue(1, self.ui.te_description.toPlainText())    # Description
-            query.bindValue(2, self.ui.le_age_rating.text())            # Age Rating
-            query.bindValue(3, self.ui.cb_genre.currentText())          # Genre
-            query.bindValue(4, self.ui.sb_season.value())               # Season
-            query.bindValue(5, self.ui.sb_disc_count.value())           # Disc Count
-            query.bindValue(6, self.ui.cb_media_type.currentText())     # Media Type
-            query.bindValue(7, self.ui.sb_play_time.value())            # Play Time
-            query.bindValue(8, self.ui.te_notes.toPlainText())          # Notes
-            query.exec_()
-            print(self.model_media.isDirty())
+            row = self.model_media.rowCount()
+            self.widget_mapper.submit()
+            self.model_media.insertRow(row)
+            self.widget_mapper.setCurrentIndex(row)
+            self.ui.le_title.setFocus()
             logger.info(f"Adding new database entry: {self.ui.le_title.text()}\n"
                         f"New Count: {self.count_all_entries('media')}")
             return True
@@ -272,8 +261,14 @@ class MDB(QtWidgets.QMainWindow):
         """
         try:
             logger.info(f"Deleting Entry.")
-            self.model_media_proxy.removeRow(self.selection.currentIndex().row())
-            return True
+            delete_entry = QtWidgets.QMessageBox.warning(
+                self,
+                "Delete MDB Entry?",
+                f"Delete selected entry?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            if delete_entry == QtWidgets.QMessageBox.Yes:
+                self.model_media_proxy.removeRow(self.selection.currentIndex().row())
+                return True
         except Exception as err:
             logger.exception(f"Error in MDB.delete_entry\n{err}\n")
             return False
@@ -389,6 +384,7 @@ class MDB(QtWidgets.QMainWindow):
             self.ui.sb_play_time.setValue(0)
             self.ui.te_notes.clear()
             # ===== Other Bits =====
+            self.widget_mapper.setCurrentIndex(-1)
             self.ui.le_search_bar.setFocus()
             if self.ui.actionDisplay_by_Genre.isChecked():
                 self.count_entries_by_genre()
@@ -436,24 +432,6 @@ class MDB(QtWidgets.QMainWindow):
             logger.info(f"Error in MDB.display_selected_entry\n{err}\n")
             return False
 
-    def display_message(self, msg):
-        """
-        Create a popup message box to display 'msg'
-
-        :param msg: The message to display
-        :return: True if successful else False.
-        """
-        try:
-            logger.info(f"Trying to display message:\n'{msg}'")
-            QtWidgets.QMessageBox.warning(
-                self,
-                "Media Database",
-                f"{msg}")
-            return True
-        except Exception as err:
-            logger.exception(f"Error displaying message:\n'{msg}'\n{err}\n")
-            return False
-
     # ===== Other Methods =====
     def __str__(self):
         """"""
@@ -467,7 +445,7 @@ class MDB(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
 
         if choice == QtWidgets.QMessageBox.Yes:
-            self.db.close()   # Close connection to the cursor & database.
+            self.db.close()         # Close connection to the database.
             event.accept()          # Quite the program.
         else:
             event.ignore()          # Don't quit the program.
