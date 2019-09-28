@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_mdb_edit_genres.ui'
+# Form implementation generated from reading ui file 'ui_mdb2_edit_genres.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -34,10 +34,7 @@ class Ui_edit_genres_window(object):
         self.hl_genres.setContentsMargins(10, 10, 10, 10)
         self.hl_genres.setSpacing(5)
         self.hl_genres.setObjectName("hl_genres")
-        self.lst_genres = QtWidgets.QListWidget(self.gb_genres)
-        font = QtGui.QFont()
-        font.setFamily("Arial")
-        self.lst_genres.setFont(font)
+        self.lst_genres = QtWidgets.QListView(self.gb_genres)
         self.lst_genres.setObjectName("lst_genres")
         self.hl_genres.addWidget(self.lst_genres)
         self.vl_genre_info = QtWidgets.QVBoxLayout()
@@ -82,7 +79,6 @@ class Ui_edit_genres_window(object):
         self.te_genre_examples.setObjectName("te_genre_examples")
         self.vl_genre_info.addWidget(self.te_genre_examples)
         self.hl_genres.addLayout(self.vl_genre_info)
-        self.hl_genres.setStretch(0, 1)
         self.hl_genres.setStretch(1, 3)
         self.verticalLayout_2.addWidget(self.gb_genres)
         self.gb_buttons = QtWidgets.QGroupBox(self.central_widget)
@@ -142,7 +138,6 @@ class Ui_edit_genres_window(object):
         edit_genres_window.setTabOrder(self.btn_add_genre, self.btn_update_genre)
         edit_genres_window.setTabOrder(self.btn_update_genre, self.btn_delete_genre)
         edit_genres_window.setTabOrder(self.btn_delete_genre, self.btn_clear)
-        edit_genres_window.setTabOrder(self.btn_clear, self.lst_genres)
 
     def retranslateUi(self, edit_genres_window):
         _translate = QtCore.QCoreApplication.translate

@@ -2,9 +2,12 @@ import logging
 from logging.handlers import RotatingFileHandler
 from PyQt5 import (QtSql, QtWidgets, QtCore)
 from mdb_ui_main import Ui_MainWindow
+from mdb_ui_edit_genres import Ui_edit_genres_window
+from mdb_ui_edit_media_types import Ui_edit_media_types_window
+from mdb_ui_entries_converter import Ui_Converter
 
 __author__ = "Dominic Lee"
-__version__ = 0.10
+__module_version__ = __version__ = 0.10
 
 # ----- Logging Configuration -----
 logger = logging.getLogger(__name__)
@@ -449,6 +452,24 @@ class MDB(QtWidgets.QMainWindow):
             event.accept()          # Quite the program.
         else:
             event.ignore()          # Don't quit the program.
+
+
+class MDBEditGenres(QtWidgets.QMainWindow):
+    """"""
+    def __init__(self, database="Media-Database.db", parent=None):
+        super(MDBEditGenres, self).__init__(parent)
+        # ===== Connection to Database =====
+        self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+        self.db.setDatabaseName(database)
+        # ===== Create UI =====
+        self.ui = Ui_edit_genres_window()
+        self.ui.setupUi(self)
+        # ===== Models =====
+        self.model_genres = QtSql.QSqlTableModel()
+        self.model_genres.setTable("genres")
+        # ===== Widget Mapper =====
+        self.widget_mapper = QtWidgets.QDataWidgetMapper()
+        self.widget_mapper.setModel(self.model_genres)
 
 
 if __name__ == "__main__":

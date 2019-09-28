@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui_mdb_edit_media_types.ui'
+# Form implementation generated from reading ui file 'ui_mdb2_edit_media_types.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -86,7 +86,7 @@ class Ui_edit_media_types_window(object):
         self.gridLayout.addWidget(self.btn_add_type, 0, 1, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.gridLayout.addItem(spacerItem, 3, 1, 1, 1)
-        self.lst_media_types = QtWidgets.QListWidget(self.gb_media_types)
+        self.lst_media_types = QtWidgets.QListView(self.gb_media_types)
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(12)
@@ -96,6 +96,7 @@ class Ui_edit_media_types_window(object):
         self.vl_central_widget.addWidget(self.gb_media_types)
         self.vl_central_widget.setStretch(0, 1)
         edit_media_types_window.setCentralWidget(self.central_widget)
+        self.lbl_type_name.setBuddy(self.le_type_name)
 
         self.retranslateUi(edit_media_types_window)
         QtCore.QMetaObject.connectSlotsByName(edit_media_types_window)
@@ -110,12 +111,11 @@ class Ui_edit_media_types_window(object):
         self.btn_done.setText(_translate("edit_media_types_window", "&Done"))
         self.btn_done.setShortcut(_translate("edit_media_types_window", "Esc"))
         self.btn_clear.setText(_translate("edit_media_types_window", "&Clear"))
-        self.btn_clear.setShortcut(_translate("edit_media_types_window", "Alt+C"))
+        self.btn_clear.setShortcut(_translate("edit_media_types_window", "Esc"))
         self.btn_delete_type.setText(_translate("edit_media_types_window", "D&elete"))
-        self.lbl_type_name.setText(_translate("edit_media_types_window", "Media Type Name"))
+        self.lbl_type_name.setText(_translate("edit_media_types_window", "Media Type &Name"))
         self.btn_add_type.setText(_translate("edit_media_types_window", "&Add"))
         self.btn_add_type.setShortcut(_translate("edit_media_types_window", "Alt+A"))
-        self.lst_media_types.setSortingEnabled(True)
 
 
 if __name__ == "__main__":
