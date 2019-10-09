@@ -66,10 +66,13 @@ class MDB(QtWidgets.QMainWindow):
         logger.info("Creating models...")
         self.model_media = QtSql.QSqlTableModel(self)
         self.configure_model_media()
+
         self.model_media_proxy = QtCore.QSortFilterProxyModel(self)
         self.configure_model_media_proxy()
+
         self.model_genres = QtSql.QSqlTableModel(self)
         self.configure_model_genres()
+
         self.model_types = QtSql.QSqlTableModel(self)
         self.configure_model_types()
         logger.info("Models Done.")
@@ -84,6 +87,9 @@ class MDB(QtWidgets.QMainWindow):
         self.ui.cb_genre.setModelColumn(self.GENRE_TITLE)
         self.ui.cb_media_type.setModel(self.model_types)
         self.ui.cb_media_type.setModelColumn(self.TYPES_TITLE)
+        # Sub-windows
+        self.edit_genres = MDBEditGenres(parent=self)
+
         logger.info("UI Done.")
 
         # ===== Create Widget Mapper =====
@@ -215,15 +221,17 @@ class MDB(QtWidgets.QMainWindow):
             self.ui.actionAdd_Entry.triggered.connect(self.add_entry)
             self.ui.actionDelete_Entry.triggered.connect(self.delete_entry)
             self.ui.actionUpdate_Entry.triggered.connect(self.update_entry)
-            # self.ui.actionEdit_Genres.triggered.connect()
+            self.ui.actionEdit_Genres.triggered.connect(self.show_genres_window)
             # self.ui.actionConvert_Genres.triggered.connect()
             # self.ui.actionEdit_Media_Types.triggered.connect()
             # self.ui.actionConvert_Types.triggered.connect()
             # Help Menu:
             self.ui.actionAbout.triggered.connect(
-                lambda: self.display_message(
-                    f"Media Database v2\nPowered by PyQt5\n"
-                    f"Written by: {__author__}\nVersion: {__version__}"))
+                lambda: QtWidgets.QMessageBox.information(
+                    self,
+                    f"About MDB {__version__}",
+                    f"Media Database created by {__author__}\nVersion: {__version__}",
+                    QtWidgets.QMessageBox.Ok))
             # Other UI Elements:
             self.ui.le_search_bar.textChanged.connect(self.model_media_proxy.setFilterRegExp)
             self.ui.actionDisplay_by_Type.triggered.connect(lambda: self.display_count(self.ui.actionDisplay_by_Type))
@@ -435,6 +443,10 @@ class MDB(QtWidgets.QMainWindow):
             logger.info(f"Error in MDB.display_selected_entry\n{err}\n")
             return False
 
+    def show_genres_window(self):
+        """"""
+        self.edit_genres.show()
+
     # ===== Other Methods =====
     def __str__(self):
         """"""
@@ -456,6 +468,12 @@ class MDB(QtWidgets.QMainWindow):
 
 class MDBEditGenres(QtWidgets.QMainWindow):
     """"""
+    # Constants for Qt settings & readability:
+    GENRE_ID, GENRE_TITLE, GENRE_DESCRIPTION, GENRE_EXAMPLES = range(4)
+    ASCENDING, DESCENDING = QtCore.Qt.AscendingOrder, QtCore.Qt.DescendingOrder
+    ON_ROW_CHANGE = QtSql.QSqlTableModel.OnRowChange
+    ON_FIELD_CHANGE = QtSql.QSqlTableModel.OnFieldChange
+
     def __init__(self, database="Media-Database.db", parent=None):
         super(MDBEditGenres, self).__init__(parent)
         # ===== Connection to Database =====
@@ -467,9 +485,53 @@ class MDBEditGenres(QtWidgets.QMainWindow):
         # ===== Models =====
         self.model_genres = QtSql.QSqlTableModel()
         self.model_genres.setTable("genres")
+        self.model_genres.setEditStrategy(self.ON_FIELD_CHANGE)
+        self.model_genres.sort(self.GENRE_TITLE, self.ASCENDING)
+        self.model_genres.select()
         # ===== Widget Mapper =====
         self.widget_mapper = QtWidgets.QDataWidgetMapper()
         self.widget_mapper.setModel(self.model_genres)
+        self.ui.lst_genres.setModel(self.model_genres)
+        self.ui.lst_genres.setModelColumn(self.GENRE_TITLE)
+        self.widget_mapper.addMapping(self.ui.le_genre_name, self.GENRE_TITLE)
+        self.widget_mapper.addMapping(self.ui.te_genre_description, self.GENRE_DESCRIPTION)
+        self.widget_mapper.addMapping(self.ui.te_genre_examples, self.GENRE_EXAMPLES)
+        # ===== Finally =====
+        self.selection = self.ui.lst_genres.selectionModel()
+        self.create_connections()
+
+    # ===== Configuration Methods =====
+    def create_connections(self):
+        """"""
+        # ===== Buttons =====
+        self.ui.btn_done.clicked.connect(self.closeEvent)
+        # ===== Other Elements =====
+        self.selection.selectionChanged.connect(self.display_selected_entry)
+        return True
+
+    # ===== Database Methods =====
+    def add_genre(self):
+        """"""
+        pass
+
+    def delete_genre(self):
+        """"""
+        pass
+
+    # ===== UI Methods =====
+    def display_selected_entry(self):
+        """"""
+        try:
+            self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
+            return True
+        except Exception as err:
+            logger.info(f"Error in MDBEditGenres.display_selected_entry\n{err}\n")
+            return False
+
+    # ===== Other Methods =====
+    def closeEvent(self, event=None):
+        """Overrides close event to just hide the window."""
+        self.hide()
 
 
 if __name__ == "__main__":
