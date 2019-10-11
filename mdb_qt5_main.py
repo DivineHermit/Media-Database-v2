@@ -89,6 +89,7 @@ class MDB(QtWidgets.QMainWindow):
         self.ui.cb_media_type.setModelColumn(self.TYPES_TITLE)
         # Sub-windows
         self.edit_genres = MDBEditGenres(parent=self)
+        self.edit_media_types = MDBEditMediaTypes(parent=self)
 
         logger.info("UI Done.")
 
@@ -223,7 +224,7 @@ class MDB(QtWidgets.QMainWindow):
             self.ui.actionUpdate_Entry.triggered.connect(self.update_entry)
             self.ui.actionEdit_Genres.triggered.connect(self.show_genres_window)
             # self.ui.actionConvert_Genres.triggered.connect()
-            # self.ui.actionEdit_Media_Types.triggered.connect()
+            self.ui.actionEdit_Media_Types.triggered.connect(self.show_types_window)
             # self.ui.actionConvert_Types.triggered.connect()
             # Help Menu:
             self.ui.actionAbout.triggered.connect(
@@ -434,6 +435,7 @@ class MDB(QtWidgets.QMainWindow):
         """
         When an item in the media list is selected sends the index
             to the mapper so it can display the entry on the UI.
+
         :return:    True/False depending on success.
         """
         try:
@@ -446,6 +448,10 @@ class MDB(QtWidgets.QMainWindow):
     def show_genres_window(self):
         """"""
         self.edit_genres.show()
+
+    def show_types_window(self):
+        """"""
+        self.edit_media_types.show()
 
     # ===== Other Methods =====
     def __str__(self):
@@ -483,7 +489,7 @@ class MDBEditGenres(QtWidgets.QMainWindow):
         self.ui = Ui_edit_genres_window()
         self.ui.setupUi(self)
         # ===== Models =====
-        self.model_genres = QtSql.QSqlTableModel()
+        self.model_genres = QtSql.QSqlTableModel(self)
         self.model_genres.setTable("genres")
         self.model_genres.setEditStrategy(self.ON_FIELD_CHANGE)
         self.model_genres.sort(self.GENRE_TITLE, self.ASCENDING)
@@ -520,7 +526,11 @@ class MDBEditGenres(QtWidgets.QMainWindow):
 
     # ===== UI Methods =====
     def display_selected_entry(self):
-        """"""
+        """
+        When an item in the list is selected sends the index
+            to the mapper so it can display the entry on the UI.
+
+        :return:    True/False depending on success."""
         try:
             self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
             return True
@@ -531,6 +541,73 @@ class MDBEditGenres(QtWidgets.QMainWindow):
     # ===== Other Methods =====
     def closeEvent(self, event=None):
         """Overrides close event to just hide the window."""
+        self.hide()
+
+
+class MDBEditMediaTypes(QtWidgets.QMainWindow):
+    # TODO: Logging...
+    # Constants for Qt settings & readability:
+    TYPES_ID, TYPES_TITLE = range(2)
+    ASCENDING, DESCENDING = QtCore.Qt.AscendingOrder, QtCore.Qt.DescendingOrder
+    ON_ROW_CHANGE = QtSql.QSqlTableModel.OnRowChange
+    ON_FIELD_CHANGE = QtSql.QSqlTableModel.OnFieldChange
+
+    def __init__(self, database="Media-Database.db", parent=None):
+        super(MDBEditMediaTypes, self).__init__(parent)
+        # ===== Connection to Database =====
+        self.db = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+        self.db.setDatabaseName(database)
+        # ===== Models =====
+        self.model_types = QtSql.QSqlTableModel(self)
+        self.model_types.setTable("media_types")
+        self.model_types.setEditStrategy(self.ON_FIELD_CHANGE)
+        self.model_types.sort(self.TYPES_TITLE, self.ASCENDING)
+        self.model_types.select()
+        # ===== Create UI =====
+        self.ui = Ui_edit_media_types_window()
+        self.ui.setupUi(self)
+        self.ui.lst_media_types.setModel(self.model_types)
+        self.ui.lst_media_types.setModelColumn(self.TYPES_TITLE)
+        # ===== Widget Mapper =====
+        self.widget_mapper = QtWidgets.QDataWidgetMapper(self)
+        self.widget_mapper.addMapping(self.ui.le_type_name, self.TYPES_TITLE)
+        # ===== Finally =====
+        self.selection = self.ui.lst_media_types.selectionModel()
+        self.create_connections()
+
+    # ===== Configuration Methods =====
+    def create_connections(self):
+        """"""
+        # ===== Buttons =====
+        self.ui.btn_done.clicked.connect(self.closeEvent)
+        # ===== Other Elements =====
+        self.selection.selectionChanged.connect(self.display_selected_entry)
+        return True
+
+    # ===== Database Methods =====
+    def add_media_type(self):
+        pass
+
+    def delete_media_type(self):
+        pass
+
+    # ===== UI Methods =====
+    def display_selected_entry(self):
+        """
+        When an item in the list is selected sends the index
+            to the mapper so it can display the entry on the UI.
+
+        :return:    True/False depending on success.
+        """
+        try:
+            self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
+            return True
+        except Exception as err:
+            logger.info(f"Error in MDBEditMediaTypes.display_selected_entry\n{err}\n")
+            return False
+
+    # ===== Other Methods =====
+    def closeEvent(self, event=None):
         self.hide()
 
 
