@@ -60,6 +60,7 @@ class MDB(QtWidgets.QMainWindow):
                 "Error connecting to database:\n{}".format(self.db.lastError().text()),
                 QtWidgets.QMessageBox.Ok)
             sys.exit(1)
+        self.create_tables()
         logger.info("Connected to {0}: {1}".format(database, self.db.isOpen()))
 
         # ===== Create Models =====
@@ -129,7 +130,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Widget Mapper Configuration Done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.configure_widget_mapper\n{err}\n")
+            logger.exception(f"Error in MDB.configure_widget_mapper\n{err}")
             return False
 
     def configure_model_media(self):
@@ -146,7 +147,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Media model configuration done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.configure_model_media\n{err}\n")
+            logger.exception(f"Error in MDB.configure_model_media\n{err}")
             return False
 
     def configure_model_media_proxy(self):
@@ -163,7 +164,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Media Proxy model configuration done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.configure_model_media_proxy\n{err}\n")
+            logger.exception(f"Error in MDB.configure_model_media_proxy\n{err}")
             return False
 
     def configure_model_genres(self):
@@ -179,7 +180,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Genres model configuration done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.configure_model_genres\n{err}\n")
+            logger.exception(f"Error in MDB.configure_model_genres\n{err}")
             return False
 
     def configure_model_types(self):
@@ -195,7 +196,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Media Types model configuration done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.configure_model_types\n{err}\n")
+            logger.exception(f"Error in MDB.configure_model_types\n{err}")
             return False
 
     def create_connections(self):
@@ -241,7 +242,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("Qt Connections Done.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.create_connections\n{err}\n")
+            logger.exception(f"Error in MDB.create_connections\n{err}")
             return False
 
     # ===== Database Methods =====
@@ -261,7 +262,7 @@ class MDB(QtWidgets.QMainWindow):
                         f"New Count: {self.count_all_entries('media')}")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.add_entry\n{err}\n")
+            logger.exception(f"Error in MDB.add_entry\n{err}")
             return False
 
     def delete_entry(self, event=None):
@@ -282,7 +283,7 @@ class MDB(QtWidgets.QMainWindow):
                 self.model_media_proxy.removeRow(self.selection.currentIndex().row())
                 return True
         except Exception as err:
-            logger.exception(f"Error in MDB.delete_entry\n{err}\n")
+            logger.exception(f"Error in MDB.delete_entry\n{err}")
             return False
 
     def update_entry(self, event=None):
@@ -303,7 +304,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info(f"MDB.count_all_entries returning: {count.value(0)}")
             return count.value(0)
         except Exception as err:
-            logger.exception(f"Error in MDB.count_all_entries\n{err}\n")
+            logger.exception(f"Error in MDB.count_all_entries\n{err}")
             return None
 
     def count_entries_by_genre(self):
@@ -329,7 +330,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info(f"MDB.count_entries_by_genre Returning:\n{output.strip(', ')}")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.count_entries_by_genre\n{err}\n")
+            logger.exception(f"Error in MDB.count_entries_by_genre\n{err}")
             return False
 
     def count_entries_by_type(self):
@@ -355,7 +356,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info(f"MDB.count_entries_by_type Returning:\n{output.strip(', ')}")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.count_entries_by_type\n{err}\n")
+            logger.exception(f"Error in MDB.count_entries_by_type\n{err}")
             return False
 
     def return_distinct_entries(self, table, column):
@@ -373,8 +374,47 @@ class MDB(QtWidgets.QMainWindow):
             query.exec_()
             return query
         except Exception as err:
-            logger.exception(f"Error in MDB.return_distinct_entries\n{err}\n")
+            logger.exception(f"Error in MDB.return_distinct_entries\n{err}")
             return None
+
+    def create_tables(self):
+        """
+        Creates the database tables if they don't already exist.
+
+        :return: True/False depending on success.
+        """
+        try:
+            media_types = QtSql.QSqlQuery(
+                """CREATE TABLE IF NOT EXISTS media_types (
+                        id INTEGER PRIMARY KEY NOT NULL,
+                        type VARCHAR)""", self.db)
+            media_types.exec_()
+    
+            genres = QtSql.QSqlQuery(
+                """CREATE TABLE IF NOT EXISTS genres (
+                    id INTEGER PRIMARY KEY,
+                    genre VARCHAR,
+                    description VARCHAR,
+                    examples VARCHAR)""")
+            genres.exec_()
+    
+            media = QtSql.QSqlQuery(
+                """CREATE TABLE IF NOT EXISTS media (
+                    id INTEGER PRIMARY KEY, 
+                    title VARCHAR NOT NULL,
+                    description VARCHAR,
+                    age_rating VARCHAR,
+                    genre VARCHAR,
+                    season INTEGER,
+                    disc_count INTEGER,
+                    media_type VARCHAR,
+                    play_time INTEGER,
+                    notes VARCHAR)""")
+            media.exec_()
+            return True
+        except Exception as err:
+            logger.exception(f"Error in MDB.create_tables\n{err}")
+            return False
 
     # ===== UI Methods =====
     def clear_ui(self, event=None):
@@ -405,7 +445,7 @@ class MDB(QtWidgets.QMainWindow):
             logger.info("UI Cleared.")
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.clear_ui\n{err}\n")
+            logger.exception(f"Error in MDB.clear_ui\n{err}")
             return False
 
     def display_count(self, sender):
@@ -428,7 +468,7 @@ class MDB(QtWidgets.QMainWindow):
                 self.count_entries_by_type()
             return True
         except Exception as err:
-            logger.exception(f"Error in MDB.display_count\n{err}\n")
+            logger.exception(f"Error in MDB.display_count\n{err}")
             return False
 
     def display_selected_entry(self):
@@ -442,7 +482,7 @@ class MDB(QtWidgets.QMainWindow):
             self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
             return True
         except Exception as err:
-            logger.info(f"Error in MDB.display_selected_entry\n{err}\n")
+            logger.info(f"Error in MDB.display_selected_entry\n{err}")
             return False
 
     def show_genres_window(self):
@@ -535,7 +575,7 @@ class MDBEditGenres(QtWidgets.QMainWindow):
             self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
             return True
         except Exception as err:
-            logger.info(f"Error in MDBEditGenres.display_selected_entry\n{err}\n")
+            logger.info(f"Error in MDBEditGenres.display_selected_entry\n{err}")
             return False
 
     # ===== Other Methods =====
@@ -603,7 +643,7 @@ class MDBEditMediaTypes(QtWidgets.QMainWindow):
             self.widget_mapper.setCurrentIndex(self.selection.currentIndex().row())
             return True
         except Exception as err:
-            logger.info(f"Error in MDBEditMediaTypes.display_selected_entry\n{err}\n")
+            logger.info(f"Error in MDBEditMediaTypes.display_selected_entry\n{err}")
             return False
 
     # ===== Other Methods =====
